@@ -1,20 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute} from '@angular/router';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
 import { AccountService, AlertService } from '@app/_services';
 
-@Component({ templateUrl: 'login.component.html'})
+@Component({ templateUrl: 'login.component.html' })
 export class LoginComponent implements OnInit {
-    form: UntypedFormBuilder;
-    loading = false;
+    form!: FormGroup;
+    submitting = false;
     submitted = false;
 
     constructor(
-        private formBuilder: UntypedFormBuilder,
+        private formBuilder: FormBuilder,
         private route: ActivatedRoute,
-        private rotuer: Router,
+        private router: Router,
         private accountService: AccountService,
         private alertService: AlertService
     ) { }
@@ -32,26 +32,26 @@ export class LoginComponent implements OnInit {
     onSubmit() {
         this.submitted = true;
 
-        // reset alert on submit
+        // reset alerts on submit
         this.alertService.clear();
 
-        // stope here if form is invalid
+        // stop here if form is invalid
         if (this.form.invalid) {
             return;
         }
 
-        this.loading = true;
+        this.submitting = true;
         this.accountService.login(this.f.email.value, this.f.password.value)
             .pipe(first())
             .subscribe({
                 next: () => {
-                    //get return url from queary parameters or default to home page
+                    // get return url from query parameters or default to home page
                     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-                    this.rotuer.navigateByUrl(returnUrl);
+                    this.router.navigateByUrl(returnUrl);
                 },
                 error: error => {
                     this.alertService.error(error);
-                    this.loading = false;
+                    this.submitting = false;
                 }
             });
     }

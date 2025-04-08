@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute} from '@angular/router';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
 import { AccountService, AlertService } from '@app/_services';
@@ -8,12 +8,12 @@ import { MustMatch } from '@app/_helpers';
 
 @Component({ templateUrl: 'register.component.html' })
 export class RegisterComponent implements OnInit {
-    form: UntypedFormGroup;
-    loading = false;
+    form!: FormGroup;
+    submitting = false;
     submitted = false;
 
     constructor(
-        private formBuilder: UntypedFormBuilder,
+        private formBuilder: FormBuilder,
         private route: ActivatedRoute,
         private router: Router,
         private accountService: AccountService,
@@ -30,12 +30,12 @@ export class RegisterComponent implements OnInit {
             confirmPassword: ['', Validators.required],
             acceptTerms: [false, Validators.requiredTrue]
         }, {
-            validator: MustMatch('passowrd', 'confirmPassword')
+            validator: MustMatch('password', 'confirmPassword')
         });
     }
 
-    // convenience getter for easy access to from fields
-    get f() { return this.form.controls;}
+    // convenience getter for easy access to form fields
+    get f() { return this.form.controls; }
 
     onSubmit() {
         this.submitted = true;
@@ -48,17 +48,17 @@ export class RegisterComponent implements OnInit {
             return;
         }
 
-        this.loading = true;
+        this.submitting = true;
         this.accountService.register(this.form.value)
             .pipe(first())
             .subscribe({
-                next: [] => {
-                    this.alertService.success('Registration successful, please check your email for verification instructions', { keepAfterRouterChange: true });
+                next: () => {
+                    this.alertService.success('Registration successful, please check your email for verification instructions', { keepAfterRouteChange: true });
                     this.router.navigate(['../login'], { relativeTo: this.route });
                 },
                 error: error => {
                     this.alertService.error(error);
-                    this.loading = false;
+                    this.submitting = false;
                 }
             });
     }
